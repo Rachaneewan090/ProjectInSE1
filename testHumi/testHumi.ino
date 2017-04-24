@@ -6,8 +6,8 @@
 #define DHTTYPE DHT11 // DHT 11 
 
 //config wifi
-const char* ssid = "ARADA"; // wifi ssid
-const char* password = "0815350228"; // wifi้ password
+const char* ssid = "PAINAIMA"; // wifi ssid
+const char* password = "0805205425"; // wifi้ password
 
 // Config MQTT Server
 const char * topic = "keppa"; // name fo topic 
@@ -49,23 +49,23 @@ void reconnect() {
     if (client.connect("555555666777")) {
     Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(topic, "hello world");
+      //client.publish(topic, "hello world");
       // ... and resubscribe
       client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+      // Wait 2 seconds before retrying
+      delay(2000);
     }//else
   }//while
 }//reconnect
 
 void loop() {
-   float h = dht.readHumidity();
-   float t = dht.readTemperature();
-   delay(10000);
+   int h = dht.readHumidity();
+   int t = dht.readTemperature();
+   delay(5000);
    String sensorHumi = "Humi,"+String(h);
    String sensorTemp = "Temp,"+String(t);
    
@@ -85,9 +85,7 @@ if (isnan(t) || isnan(h)) {
   }//if not connect
   
     client.publish(topic,(char *)sensorHumi.c_str());
-    delay(5000);
-
+    delay(10000);
     client.publish(topic,(char *)sensorTemp.c_str());
-    delay(5000);
     client.loop();
 }

@@ -1,6 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#define PIN A0
+#include "DHT.h"
+
+#define DHTPIN D2 // what pin we're connected to
+#define DHTTYPE DHT11 // DHT 11 
+#define PIN A0 //for light sensor
 
 //config wifi
 const char* ssid = "PAINAIMA"; // wifi ssid
@@ -18,10 +22,13 @@ char message_buff[100];
 WiFiClient keppa;
 PubSubClient client(keppa);
 
+DHT dht(DHTPIN, DHTTYPE);
+
 void setup() {
-  Serial.begin(9600);
-  Serial.print("Connecting to ");
-  WiFi.begin(ssid, password);
+Serial.begin(9600); 
+Serial.println("DHTxx test!");
+dht.begin();
+WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -33,7 +40,6 @@ void setup() {
     client.subscribe(topic);
     }
     client.setServer(mqtt_server, mqtt_port); // เชื่อมต่อ mqtt server
- // client.setCallback(callback); // สร้างฟังก์ชันเมื่อมีการติดต่อจาก mqtt มา
 }
 
 void reconnect() {
@@ -43,27 +49,47 @@ void reconnect() {
     // Attempt to connect
     if (client.connect("555555666777")) {
     Serial.println("connected");
+      // Once connected, publish an announcement...
+      //client.publish(topic, "hello world");
+      // ... and resubscribe
       client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+      // Wait 2 seconds before retrying
+      delay(2000);
     }//else
   }//while
 }//reconnect
 
 void loop() {
- int sensorValue = analogRead(A0);
- delay(10000);
- String sensor = "Light,"+String(sensorValue);
+   int h = dht.readHumidity();
+   int t = dht.readTemperature();
+   int sensorValue = analogRead(A0);
+   
+   String sensorHumi = "Humi,"+String(h);
+   String sensorTemp = "Temp,"+String(t);
+   String sensor = "Light,"+String(sensorValue);
+   
+if (isnan(t) || isnan(h)) {
+    Serial.println("Failed to read from DHT");
+  } else {
+    Serial.print("Humidity: "); 
+    Serial.print(h);
+    Serial.print(" %\t");
+    Serial.print("Temperature: "); 
+    Serial.print(t);
+    Serial.println(" *C");
+  }
 
- if (!client.connected()) {
+  if (!client.connected()) {
     reconnect();
-  }
+  }//if not connect
   
- client.publish(topic,(char *)sensor.c_str());
- delay(10000);
- client.loop();
-  }
+    client.publish(topic,(char *)sensorHumi.c_str());
+    client.publish(topic,(char *)sensor.c_str());
+    client.publish(topic,(char *)sensorTemp.c_str());
+    delay(10000);
+    client.loop();
+}
