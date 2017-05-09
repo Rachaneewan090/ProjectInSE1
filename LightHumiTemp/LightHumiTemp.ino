@@ -13,7 +13,7 @@ const char* password = "qwertyuiop"; // wifi้ password
 // Config MQTT Server
 const char * topic = "keppa"; // name fo topic 
 char message_buff[100];
-#define mqtt_server "broker.hivemq.com" // server
+#define mqtt_server "mean.psu.ac.th" // server
 #define mqtt_port 1883   // เลข port
 #define mqtt_user "555555666777" // user
 #define mqtt_password "" // password
@@ -78,7 +78,7 @@ void loop() {
    //จัดให้เป็นประโยคเพื่อจะส่งไปให้ MQTT
    String sensorHumi = "Humi,"+String(h);
    String sensorTemp = "Temp,"+String(t);
-   String sensorLight = "Light,"+String(LUX);
+   String sensorLight = "Light,"+String(l);
    
 if (isnan(t) || isnan(h)) {
     Serial.println("Failed to read from DHT");
@@ -88,7 +88,9 @@ if (isnan(t) || isnan(h)) {
     Serial.print(" %\t");
     Serial.print("Temperature: "); 
     Serial.print(t);
-    Serial.println(" *C");
+    Serial.print(" *C");
+    Serial.print("Light");
+    Serial.println(l);
   }//else
 
   if (!client.connected()) {
