@@ -3,12 +3,12 @@
 #include "DHT.h"
 
 #define DHTPIN D2 // what pin we're connected to
-#define DHTTYPE DHT11 // DHT 11 
+#define DHTTYPE DHT22 // DHT 11 
 #define PIN A0 //for light sensor
 
 //config wifi
-const char* ssid = "PAINAIMA"; // wifi ssid
-const char* password = "0805205425"; // wifi้ password
+const char* ssid = "racha"; // wifi ssid
+const char* password = "qwertyuiop"; // wifi้ password
 
 // Config MQTT Server
 const char * topic = "keppa"; // name fo topic 
@@ -66,11 +66,19 @@ void reconnect() {
 void loop() {
    int h = dht.readHumidity();
    int t = dht.readTemperature();
-   int sensorValue = analogRead(A0);
+   int l = analogRead(A0);
    
+   //แปลค่าที่ได้รับจากsensorแสงเป็นค่าLUX
+   double LUX=0; //กำหนดตัวแปลLUXเพื่อเก็บค่าที่คำนวนออกมาได้
+   double V=0; //กำหนดตัวแปลV
+   LUX = 500/l;//(1)มาจากสูตร h(RL)=500/LUX
+   V = 5*(LUX/(LUX+3.3));//(2)
+   LUX = ((2500/V)-500)/3.3;//(3)
+   
+   //จัดให้เป็นประโยคเพื่อจะส่งไปให้ MQTT
    String sensorHumi = "Humi,"+String(h);
    String sensorTemp = "Temp,"+String(t);
-   String sensor = "Light,"+String(sensorValue);
+   String sensorLight = "Light,"+String(LUX);
    
 if (isnan(t) || isnan(h)) {
     Serial.println("Failed to read from DHT");
@@ -81,14 +89,14 @@ if (isnan(t) || isnan(h)) {
     Serial.print("Temperature: "); 
     Serial.print(t);
     Serial.println(" *C");
-  }
+  }//else
 
   if (!client.connected()) {
     reconnect();
   }//if not connect
   
     client.publish(topic,(char *)sensorHumi.c_str());
-    client.publish(topic,(char *)sensor.c_str());
+    client.publish(topic,(char *)sensorLight.c_str());
     client.publish(topic,(char *)sensorTemp.c_str());
     delay(10000);
     client.loop();

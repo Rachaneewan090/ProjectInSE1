@@ -7,8 +7,8 @@ int buzzerout= 10; // digital output pin 10 - buzzer output
 int countval= 0; // counter value starting from 0 and goes up by 1 every second
 
 //config wifi
-const char* ssid = "PAINAIMA"; // wifi ssid
-const char* password = "0805205425"; // wifi้ password
+const char* ssid = "kap"; // wifi ssid
+const char* password = "asdfghjk"; // wifi้ password
 
 // Config MQTT Server
 const char * topic = "keppa"; // name fo topic 
