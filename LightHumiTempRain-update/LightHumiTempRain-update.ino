@@ -3,12 +3,13 @@
 #include <ESP8266HTTPClient.h>
 #include "DHT.h"
 
+#define PIN SD3//forsensorLight
 #define DHTPIN D2 // what pin we're connected to
 #define DHTTYPE DHT22 // DHT 22 
 
 
 //setRainsensor
-int rainsense= 0; // analog sensor input pin 0
+int rainsense= D4; // analog sensor input pin 0
 int buzzerout= 10; // digital output pin 10 - buzzer output
 
 //config wifi
@@ -85,7 +86,7 @@ void loop() {
    client.publish(topic,(char *)sensorTemp.c_str());
    Serial.println(sensorHumi);
    Serial.println(sensorTemp);
-   delay(5000);
+   delay(6000);
     //Humi to azure
     url="http://keppa.azurewebsites.net/record?id=H1&value="+String(h);
     http.begin(url);
@@ -96,7 +97,7 @@ void loop() {
       Serial.println(httpCode);
       response = http.getString();
       Serial.println(response);
-      delay(5000);
+      delay(6000);
   } else{
     Serial.println("Error in HTTP request");
   }
@@ -110,7 +111,7 @@ void loop() {
       Serial.println(httpCode);
       response = http.getString();
       Serial.println(response);
-      delay(5000);
+      delay(6000);
   } else{
     Serial.println("Error in HTTP request");
   }
@@ -119,7 +120,7 @@ void loop() {
   String sensorLight = "L1,"+String(sensorValue);
   client.publish(topic,(char *)sensorLight.c_str());
   Serial.println(sensorLight);
-  delay(5000);
+  delay(6000);
   //Light to azure
   url="http://keppa.azurewebsites.net/record?id=L1&value="+String(sensorValue);
   http.begin(url);
@@ -130,29 +131,27 @@ void loop() {
     Serial.println(httpCode);
     response = http.getString();
     Serial.println(response);
-    delay(5000);
+    delay(6000);
    } else
    {
     Serial.println("Error in HTTP request");
    }
       
   //rainsensor
-   String TF="0"; // counter value starting from 0 and goes up by 1 every second
-   int rainSenseReading = analogRead(rainsense);//rain
-   if (rainSenseReading <= 700){ 
-      TF="1";
-      String sensor = "R1,"+TF;
-      client.publish(topic,(char *)sensor.c_str());
-      Serial.println(rainSenseReading);
-   }
-   else if(rainSenseReading > 700){
-    String sensor = "R1,"+TF;
-    client.publish(topic,(char *)sensor.c_str());
-    Serial.println(rainSenseReading);
-    }
-    delay(5000);
+   String sensorRain;
+   int convers=0;
+   int rainSenseReading = digitalRead(rainsense);//rain
+   if (rainSenseReading == 1){
+      sensorRain = "R1,0";//ไม่มีฝน
+      } else {
+        sensorRain = "R1,1";
+        convers=1;
+        }//else;
+     client.publish(topic,(char *)sensorRain.c_str());
+     Serial.println(sensorRain);
+     delay(6000);
     //Rain to azure
-    url="http://keppa.azurewebsites.net/record?id=R1&value=1";
+    url="http://keppa.azurewebsites.net/record?id=R1&value="+String(convers);
     http.begin(url);
     httpCode = http.GET();
     if(httpCode == HTTP_CODE_OK)
@@ -161,11 +160,11 @@ void loop() {
       Serial.println(httpCode);
       response = http.getString();
       Serial.println(response);
-      delay(5000);
+      delay(6000);
   } else{
     Serial.println("Error in HTTP request");
   }
-  delay(5000);
+  delay(6000);
   http.end();
 
     delay(5000);
